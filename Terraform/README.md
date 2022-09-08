@@ -1,5 +1,9 @@
 # Terraform - Orchestration
 
+## Diagram Showing Using Terraform for Multi-Cloud Deployment
+
+![image](https://user-images.githubusercontent.com/97620055/189123364-ee2d3e4a-4bfc-4ebd-9b5a-35482c4b830b.png)
+
 ## What is Terraform ?
 
 - It is an IAC tool, used primarily by DevOps teams to automate various infrastructure tasks. The provisioning of cloud resources, for instance, is one of the main use cases of Terraform. It’s a cloud-agnostic (compatability with multiple cloud provider), open-source provisioning tool written in the Go language and created by HashiCorp (uses HCL).
