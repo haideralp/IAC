@@ -1,0 +1,19 @@
+# create a playbook to install nginx inside web
+# --- three dashes at the start of the file    
+
+---
+
+# add hosts or name of the host server
+- hosts: web
+
+# indentation is extremely important
+# gather live information
+  gather_facts: yes
+
+# we need admin permissions
+  become: true
+
+# add the instructions
+  tasks:
+  - name: Install Nginx
+    apt: pkg=nginx state=present

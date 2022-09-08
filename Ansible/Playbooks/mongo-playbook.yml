@@ -1,0 +1,36 @@
+
+- hosts: db
+  gather_facts: true
+  become: true
+
+  tasks:
+  - name: install mongodb
+    apt: pkg=mongodb state=present
+
+  - name: Remove mongodb file
+    file:
+     path: /etc/mongodb.conf
+     state: absent
+  
+  - name: Touch a file, using symbolic modes to set permission (equivalent to 0644)
+    file:
+     state: touch
+     path: /etc/mongodb.conf
+     mode: u=rw,g=r,o=r
+
+  - name: Insert mutliple lines and backup
+    blockinfile:
+     path: /etc/mongodb.conf
+     backup: yes
+     block: |
+       "storage:
+         dbPath: /var/lib/mongodb
+         journal:
+           enabled: true
+       systemLog:
+         destination: file
+         logAppend: true
+         path: /var/log/mongodb/mongod.log
+       net:
+         port: 27017
+         bindIp: 0.0.0.0"

@@ -1,0 +1,41 @@
+---
+- name : Configure the Reverse Proxy for NodeAPP
+  hosts: web
+
+
+  tasks:
+  - name: Disable NGINX Default Virtual Host
+    become: yes
+    ansible.legacy.command:
+      cmd: unlink /etc/nginx/sites-enabled/default
+
+  - name: Create NGINX conf file
+    become: yes
+    file:
+      path: /etc/nginx/sites-available/node_proxy.conf
+      state: touch
+
+  - name: Amend NGINX Conf file
+    become: yes
+    blockinfile:
+      path: /etc/nginx/sites-available/node_proxy.conf
+      marker: ""
+      block: |
+        server {
+            listen 80;
+            location / {
+                proxy_pass http://192.168.33.10:3000;
+            }
+        }
+
+  - name: Link NGINX Node Reverse Proxy
+    become: yes
+    command:
+      cmd: ln -s /etc/nginx/sites-available/node_proxy.conf /etc/nginx/sites-enabled/node_proxy.conf
+
+  - name: Make sure NGINX service is running
+    become: yes
+    service:
+      name: nginx
+      state: restarted
+      enabled: yes

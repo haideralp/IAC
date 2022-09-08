@@ -1,0 +1,25 @@
+# Setting up playbook to create reverse proxy for web server. 
+
+---
+
+# Add host name
+- hosts: web
+
+# Gather live information
+  gather_facts: yes
+
+# Admin Access Needed
+  become: yes
+
+# Adding Instructions
+  tasks:
+  - name: Reversy Proxy - Copy default file from controller to webserver
+    copy:
+        src: /etc/ansible/default
+        dest: /etc/nginx/sites-available/default
+  
+  - name: Ensuring ngxinx is restarted 
+    service:
+      name: nginx
+      state: restarted
+      enabled: yes

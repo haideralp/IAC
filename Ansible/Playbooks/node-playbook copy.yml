@@ -1,0 +1,28 @@
+# Create a playbook to install node and npm are inside web.
+# --- three dashes at the of the file of YAML
+
+---
+
+# Add hosts or Name of host server.
+- hosts: web
+# indentation is EXTREMELY IMPORTANT
+# Gather live  information
+  gather_facts: yes
+# Admin Access 
+  become: true
+
+#Add the instructions for nodejs and npm
+
+# Install in nodejs & npm in webserver
+  tasks:
+
+  - name: Retrieve source for nodejs
+    shell: curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash - 
+  
+  - name: Install nodejs
+    shell: sudo apt-get install -y nodejs 
+
+  - name: Install NPM
+    apt: pkg=npm state=present
+        
+  

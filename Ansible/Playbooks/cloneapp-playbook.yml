@@ -1,0 +1,21 @@
+# Setting up playbook to clone app folder to web web server. 
+
+---
+
+# Add host name
+- hosts: web
+
+# Gather live information
+  gather_facts: yes
+
+# Admin Access Needed
+  become: yes
+
+# Adding Instructions
+  tasks:
+   name: Clone github repository
+   ansible.builtin.git:
+       repo: https://github.com/haideralp/CI-CD.git
+       dest: /home/vagrant
+       clone: yes
+       update: yes
