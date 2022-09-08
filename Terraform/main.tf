@@ -1,3 +1,5 @@
+# Main.tf Script
+
 # who is the cloud provider 
 # it's aws
 provider "aws" {
@@ -26,15 +28,15 @@ resource "aws_instance" "node_app" {
     associate_public_ip_address = true 
 
 # Attaching key
-    key_name = eng122-haider
+    key_name = "eng122-haider.pem"
 
 # Specifiying SSH conncetion to private key
 
     connection {
       type        = "ssh"
-      host        = self.public_ip
+      host        = self.associate_public_ip_address
       user        = "ubuntu"
-      private_key = file("/c/Users/haide/.ssh/eng122-haider")
+      private_key = file("/c/Users/haide/.ssh/eng122-haider.pem")
       timeout     = "4m"
    }
 
