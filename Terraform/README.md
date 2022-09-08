@@ -21,3 +21,11 @@
 - Cloud Agnostic platform - has multiple support for various cloud providers like GCP, AWS and Azure. 
 
 
+## Installting Terraform
+
+- For Windows follow guidlines on this link after open windows power shell in startup menu as **admin**.
+
+## Create Terraform Script
+
+- Creat a main.tf script in relevant directory.
+- In same directory perform 

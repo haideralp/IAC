@@ -1,1 +1,5 @@
 \.vagrant
+\.Terraform\.terraform
+\.Terraform\terraform.tfstate
+\.Terraform\terraform.tfstate.backup
+\.Terraform\.terraform.lock.hcl
