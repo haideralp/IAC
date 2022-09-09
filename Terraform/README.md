@@ -29,6 +29,8 @@
 
 - For Windows follow guidlines on this link after open windows power shell in startup menu as **admin**.
 
+## Terraform Key Commands
+
 ## Create Terraform Script
 
 - Creat a main.tf script in relevant directory.
@@ -37,57 +39,153 @@
     - `terraform apply` - applys the script to cloud
     - `terraform destroy` - destroys the services created from tf script.
   
-``` yaml
+## Launching EC2 Instance with Configured: VPC,Subnets,Internet Gateway,Route Tables:
 
-# Main.tf Script
+- Perform the steps below in **main.tf** in order to successfuly launch of EC2 instance with configured network settings:
+    1. Create VPC 
+    2. Create public (app) and private (db) subnets within vpc. Used: `10.0.9.0/24 / 10.0.18.0/24` respectively.
+    3. Interent gateway must be provisioned witin VPC. 
+    4. Routes tables for both subnets must be created.
+    5. Association for subnets the route tables must be performed.
+    6. Create security groups for ingress and egress routes. 
+    7. Create the EC2 instance within the VPC. 
+ ## Abstraction Performed In Terraform
 
-# who is the cloud provider 
-# it's aws
+- To minimise displaying any potential data, refactor the main.tf script by creating a new `variable.tf script` defining all the key parameters so only necessary information is displayed. The variable script must be added `.gitignore` file.
+
+### Main.tf (refactored with var)
+   
+
+``` python
 provider "aws" {
-
-# within that cloud which part of world 
-# we want to to use eu-west-1   
     region = "eu-west-1"
 
 }
 
-# init and download required packges 
-# terraform init
+# VPC / / Internet Gateway / Subnets -- Generation
 
-# create a block of code to launch ec2-server
+resource "aws_vpc" "main" {
+    cidr_block = var.awc_vpc
+    instance_tenancy = "default"
+    tags = {
+      Name = "eng122-haider-vpc-tf"
+    } 
+}
+resource "aws_internet_gateway" "igw" {
+  vpc_id = aws_vpc.main.id
 
-# which resources do we like to create
-resource "aws_instance" "node_app" {
+  tags = {
+    Name = "eng122-haider-tf-igw"
+  }
+}
+
+# Public & Private Subnet Creation
+
+resource "aws_subnet" "eng122-haider-pub-tf" {
+    cidr_block = var.aws_public_subnet
+    map_public_ip_on_launch = "true"
+    
+    tags = {
+        Name = "eng122-haider-pub-tf"
+    }
+}
+
+resource "aws_subnet" "eng122-haider-priv-tf" {
+    vpc_id = awc_vpc.main.id
+    cidr_block = var.aws_private_subnet
+    map_public_ip_on_launch = "false"
+    
+    tags = {
+        Name = "eng122-haider-priv-tf"
+    }
+}
+
+# Creating Route Table for Public & Private subnet 
+
+resource "aws_route_table" "eng122-haider-crt-pub" {
+    vpc_id = aws_vpc.main.id
+    
+    route {
+        # associated subnet can reach everywhere
+        cidr_block = "0.0.0.0/0" 
+        //CRT uses this IGW to reach internet
+        gateway_id = aws_internet_gateway.igw.id 
+    }
+    
+    tags = {
+        Name = "eng122-haider-crt-pub"
+    }
+ 
+}
+
+resource "aws_route_table" "eng122-haider-crt-priv" {
+    vpc_id = aws_vpc.main.id
+    
+    route {
+        //associated subnet can reach everywhere
+        cidr_block = "0.0.0.0/0" 
+        //CRT uses this IGW to reach internet
+        gateway_id = aws_internet_gateway.igw.id 
+    }
+    
+    tags = {
+        Name = "eng122-haider-crt-priv"
+    }
+}
+# Associating CRT with Public & Private
+
+resource "aws_route_table_association" "eng122-haider-crt-pub"{
+    subnet_id = aws_subnet.eng122-haider-pub-tf.id
+    route_table_id = aws_route_table.eng122-haider-crt-pub.id
+}
+
+resource "aws_route_table_association" "eng122-haider-crt-private"{
+    subnet_id = aws_subnet.eng122-haider-priv-tf.id
+    route_table_id = aws_route_table.eng122-haider-crt-priv.id 
+}
+
+# Creating Security Group Rules for Incoming and Outgoing Traffic
+resource "aws_security_group" "app_sg" {
+  name        = "eng122-haider-tf-sg"
+  description = "Security Generated on Terraform"
+  vpc_id      = aws_vpc.main.id
+  ingress {
+    from_port = 0
+    to_port   = 0
+    protocol  = "-1"
+    
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+# Launching of EC2 Instance
+resource "aws_instance" "node-app" {
   
 # using which ami
-    ami = "ami-0b47105e3d7fc023e"
+    ami = var.ami_id
 
 # instance type
     instance_type = "t2.micro"
 
+# Specifying key name created in AWS
+    key_name = var.aws_key_name
+      
 # do we need it to have public ip
     associate_public_ip_address = true 
 
-# Attaching key
-    key_name = "eng122-haider.pem"
-
-# Specifiying SSH conncetion to private key
-
-    connection {
-      type        = "ssh"
-      host        = self.associate_public_ip_address
-      user        = "ubuntu"
-      private_key = file("/c/Users/haide/.ssh/eng122-haider.pem")
-      timeout     = "4m"
-   }
-
+    subnet_id = aws_subnet.eng122-haider-pub-tf.id
 
 # how to name your instance
     tags = {
       Name = "eng122-haider-terraform-app"
     }
+    
 }
-
-# find out how to attach your file.pem
 ```
-
